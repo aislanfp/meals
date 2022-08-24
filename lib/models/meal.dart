@@ -66,4 +66,7 @@ class Meal {
         return 'Desconhecido';
     }
   }
+
+  @override
+  String toString() => 'Meal:$id, $title';
 }

@@ -20,11 +20,26 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<Meal> _availableMeals = dummyMeals;
+  late List<Meal> _availableMeals;
+  late List<Meal> _favoriteMeals;
+  late Settings _settings;
+
+  @override
+  void initState() {
+    super.initState();
+    _availableMeals = dummyMeals;
+    _favoriteMeals = [];
+    _settings = Settings(
+        isGlutenFree: false,
+        isLactoseFree: false,
+        isVegan: false,
+        isVegetarian: false);
+  }
 
   void _filterMeals(Settings settings) {
     setState(() {
-      _availableMeals = dummyMeals.where((meal) {
+      _availableMeals.clear();
+      _availableMeals.addAll(dummyMeals.where((meal) {
         final filterFluten = settings.isGlutenFree && !meal.isGlutenFree;
         final filterLactose = settings.isLactoseFree && !meal.isLactoseFree;
         final filterVegan = settings.isVegan && !meal.isVegan;
@@ -33,15 +48,19 @@ class _MyAppState extends State<MyApp> {
             !filterLactose &&
             !filterVegan &&
             !filterVegetarian;
-      }).toList();
+      }).toList());
     });
   }
 
-  final Settings _settings = Settings(
-      isGlutenFree: false,
-      isLactoseFree: false,
-      isVegan: false,
-      isVegetarian: false);
+  void _toggleFavorite(Meal meal) {
+    setState(() => _favoriteMeals.contains(meal)
+        ? _favoriteMeals.remove(meal)
+        : _favoriteMeals.add(meal));
+  }
+
+  bool _isFavorite(Meal meal) {
+    return _favoriteMeals.contains(meal);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,10 +76,11 @@ class _MyAppState extends State<MyApp> {
               titleMedium: const TextStyle(
                   fontSize: 20, fontFamily: 'RobotoCondensed'))),
       routes: {
-        AppRoutes.HOME: (context) => const TabsScreen(),
+        AppRoutes.HOME: (context) => TabsScreen(_favoriteMeals),
         AppRoutes.CATEGORIES_MEALS: (context) =>
             CategoriesMealsScreen(_availableMeals),
-        AppRoutes.MEAL_DETAIL: (context) => const MealDetailScreen(),
+        AppRoutes.MEAL_DETAIL: (context) =>
+            MealDetailScreen(_toggleFavorite, _isFavorite),
         AppRoutes.SETTINGS: (context) =>
             SettingsScreen(_settings, _filterMeals),
       },

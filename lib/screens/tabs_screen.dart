@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:meals/components/main_drawer.dart';
+import 'package:meals/models/meal.dart';
 import 'package:meals/screens/categories_screen.dart';
 import 'package:meals/screens/favorite_screen.dart';
 
 class TabsScreen extends StatefulWidget {
-  const TabsScreen({Key? key}) : super(key: key);
+  final List<Meal> favoriteMeals;
+
+  const TabsScreen(this.favoriteMeals, {Key? key}) : super(key: key);
 
   @override
   State<TabsScreen> createState() => _TabsScreenState();
 }
 
-const _screens = <Widget>[
-  CategoriesScreen(),
-  FavoriteScreen(),
-];
-
 class _TabsScreenState extends State<TabsScreen> {
-  final _screensMap = <Map<String, Object>>[
-    {'title': 'Lista de Categorias', 'screen': _screens[0]},
-    {'title': 'Favoritos', 'screen': _screens[1]},
-  ];
-
+  late List<Widget> _screens;
+  late List<Meal> _favoriteMeals;
+  late List<Map<String, Object>> _screensMap;
   int _selectedScreenIndex = 0;
+  bool _tabAppBar = true;
 
   void _selectScreen(int index) {
     setState(() {
@@ -30,12 +27,24 @@ class _TabsScreenState extends State<TabsScreen> {
     });
   }
 
-  bool _tabAppBar = true;
-
   void _tabBar(bool value) {
     setState(() {
       _tabAppBar = value;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _favoriteMeals = widget.favoriteMeals;
+    _screens = <Widget>[
+      const CategoriesScreen(),
+      FavoriteScreen(_favoriteMeals),
+    ];
+    _screensMap = <Map<String, Object>>[
+      {'title': 'Lista de Categorias', 'screen': _screens[0]},
+      {'title': 'Favoritos', 'screen': _screens[1]},
+    ];
   }
 
   @override
@@ -57,7 +66,7 @@ class _TabsScreenState extends State<TabsScreen> {
           ]),
         ),
         body: (_tabAppBar)
-            ? const TabBarView(children: _screens)
+            ? TabBarView(children: _screens)
             : _screensMap[_selectedScreenIndex].cast()['screen'],
         drawer: const MainDrawer(),
         bottomNavigationBar: BottomNavigationBar(
